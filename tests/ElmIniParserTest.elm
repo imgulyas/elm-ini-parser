@@ -1,4 +1,4 @@
-module ParserTest exposing (suite)
+module ElmIniParserTest exposing (suite)
 
 import ElmIniParser exposing (..)
 import Expect
