@@ -1,32 +1,58 @@
-module ElmIniParser exposing (Ini(..), Line, Section(..), parse, parseSingleLine, parseToLines)
+module ElmIniParser exposing (Ini(..), Section(..), parseIni, takeOutEmptyLines)
 
 import Dict exposing (Dict)
 import Parser exposing (..)
 
 
 type Ini
-    = Sectionless (Dict String (Maybe String))
-    | Sections (List Section)
+    = WithGlobals ConfigValues (List Section)
+    | WithoutGlobals (List Section)
 
 
 type Section
-    = Section String (Dict String (Maybe String))
+    = Section String ConfigValues
 
 
-type alias Line =
-    String
+type alias ConfigValues =
+    Dict String (Maybe String)
 
 
-parse : String -> Ini
-parse _ =
-    Sections []
+
+-- a prepared line
+--   is not empty
+--   does not contain comments
 
 
-parseToLines : String -> List Line
-parseToLines _ =
+type PreparedLine
+    = PL String
+
+
+parseIni : String -> Ini
+parseIni _ =
+    WithoutGlobals []
+
+
+takeOutEmptyLines : String -> String
+takeOutEmptyLines s =
+    s
+        |> String.lines
+        |> List.concatMap
+            (\line ->
+                case line of
+                    "" ->
+                        []
+
+                    other ->
+                        [ other ]
+            )
+        |> String.join "\n"
+
+
+parseToPreparedLines : String -> List PreparedLine
+parseToPreparedLines _ =
     []
 
 
-parseSingleLine : String -> ( Maybe Line, String )
+parseSingleLine : String -> ( Maybe PreparedLine, String )
 parseSingleLine _ =
     ( Nothing, "" )
