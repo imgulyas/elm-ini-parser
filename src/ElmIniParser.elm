@@ -1,7 +1,8 @@
-module ElmIniParser exposing (Ini(..), Section(..), parseIni, prepareForIniParsing)
+module ElmIniParser exposing (Ini(..), KeyAndValue(..), Section(..), parseIni, parseLineToKV, prepareForIniParsing)
 
 import Dict exposing (Dict)
 import Parser exposing (..)
+import Set
 import String as S
 
 
@@ -73,3 +74,42 @@ prepareForIniParsing =
         >> joinIniLineBreaks
         >> removeEmptyLines
         >> removeFullLineComments
+
+
+type KeyAndValue
+    = KV String (Maybe String)
+
+
+parseLineToKV : Parser KeyAndValue
+parseLineToKV =
+    let
+        valueStringParser : Parser String
+        valueStringParser =
+            getChompedString <|
+                succeed ()
+                    |. chompUntilEndOr "\n"
+
+        valParser : Parser (Maybe String)
+        valParser =
+            map
+                (\chomped ->
+                    if S.isEmpty chomped then
+                        Nothing
+
+                    else
+                        Just chomped
+                )
+                valueStringParser
+    in
+    succeed KV
+        |. spaces
+        |= variable
+            { start = Char.isAlphaNum
+            , inner = Char.isAlphaNum
+            , reserved = Set.empty
+            }
+        |. spaces
+        |. symbol "="
+        |. spaces
+        |= valParser
+        |. lineComment ""
