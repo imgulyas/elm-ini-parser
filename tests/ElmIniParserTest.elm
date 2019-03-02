@@ -13,6 +13,21 @@ join =
     String.join "\n"
 
 
+iniParsingTest: Test
+iniParsingTest = 
+describe "iniParsing"
+    [ test "parse sessions" <|
+        \_ ->
+            let 
+                original = """[section]
+                key=value
+                """
+            in
+            Expect.equal (parseIni original) Ini "section" ConfigValues "key" "value"
+        
+            
+    ]
+
 prepareForIniParsingTest : Test
 prepareForIniParsingTest =
     describe "prepareForIniParsing"

@@ -21,7 +21,20 @@ type alias ConfigValues =
 
 parseIni : String -> Ini
 parseIni _ =
-    Debug.todo "define this"
+    succeed Ini
+        |. symbol "["
+        |. spaces
+        |= chompUntil "]"
+        |. end
+
+
+
+--    Debug.todo "define this"
+
+
+spaces : Parser ()
+spaces =
+    ignore zeroOrMore (\c -> c == ' ')
 
 
 joinIniLineBreaks : String -> String
