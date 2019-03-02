@@ -1,7 +1,10 @@
-module ElmIniParserTest exposing (prepareForIniParsingTest)
+module ElmIniParserTest exposing (parseLineToKVTest, prepareForIniParsingTest)
 
+import Debug
 import ElmIniParser exposing (..)
 import Expect
+import List
+import Parser
 import Test exposing (Test, describe, test)
 
 
@@ -103,4 +106,82 @@ prepareForIniParsingTest =
                             ]
                 in
                 Expect.equal (prepareForIniParsing original) expected
+        ]
+
+
+interpolate : List String -> String -> String
+interpolate interp s =
+    let
+        split =
+            String.split "{}" s
+
+        zipped =
+            List.map2
+                (\spl -> \int -> int ++ spl)
+                split
+                ("" :: interp)
+
+        interpolated =
+            String.concat zipped
+    in
+    interpolated
+
+
+parseLineToKVTest : Test
+parseLineToKVTest =
+    describe "parse prepared line to key and value"
+        [ test "with some value until end of string" <|
+            \() ->
+                let
+                    key =
+                        "mykey"
+
+                    value =
+                        "myvalue"
+
+                    testLine =
+                        prepareForIniParsing <| interpolate [ key, value ] "  {} = {}"
+
+                    result =
+                        Parser.run parseLineToKV testLine
+
+                    expected =
+                        Ok (KV key (Just value))
+                in
+                Expect.equal expected result
+        , test "with some value until end of line" <|
+            \() ->
+                let
+                    key =
+                        "mykey"
+
+                    value =
+                        "myvalue"
+
+                    testLine =
+                        prepareForIniParsing <| interpolate [ key, value ] "  {} = {}  \n"
+
+                    result =
+                        Parser.run parseLineToKV testLine
+
+                    expected =
+                        Ok (KV key (Just value))
+                in
+                Expect.equal expected result
+        , test "with missing value" <|
+            \() ->
+                let
+                    key =
+                        "mykey"
+
+                    testLine =
+                        prepareForIniParsing <| interpolate [ key ] "  {} =  \n"
+
+                    result =
+                        Parser.run parseLineToKV testLine
+
+                    expected =
+                        Ok (KV key (Nothing))
+                in
+                Expect.equal expected result
         ]
