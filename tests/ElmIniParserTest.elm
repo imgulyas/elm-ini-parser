@@ -96,7 +96,7 @@ prepareForIniParsingTest =
                     original =
                         join
                             [ "first"
-                            , "second# this is a line ending comment"
+                            , "second; this is a line ending comment"
                             ]
 
                     expected =

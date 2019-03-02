@@ -33,7 +33,7 @@ removeLineEndingComments : String -> String
 removeLineEndingComments =
     S.lines
         >> List.map
-            (S.split "#"
+            (S.split ";"
                 >> (\splitstr ->
                         case splitstr of
                             [] ->
