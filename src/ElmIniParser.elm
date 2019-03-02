@@ -1,7 +1,8 @@
-module ElmIniParser exposing (Ini(..), Section(..), parseIni, takeOutEmptyLines)
+module ElmIniParser exposing (Ini(..), Section(..), parseIni, prepareForIniParsing)
 
 import Dict exposing (Dict)
 import Parser exposing (..)
+import String as S
 
 
 type Ini
@@ -17,42 +18,58 @@ type alias ConfigValues =
     Dict String (Maybe String)
 
 
-
--- a prepared line
---   is not empty
---   does not contain comments
-
-
-type PreparedLine
-    = PL String
-
-
 parseIni : String -> Ini
 parseIni _ =
-    WithoutGlobals []
+    Debug.todo "define this"
 
 
-takeOutEmptyLines : String -> String
-takeOutEmptyLines s =
-    s
-        |> String.lines
-        |> List.concatMap
-            (\line ->
-                case line of
-                    "" ->
-                        []
+joinIniLineBreaks : String -> String
+joinIniLineBreaks =
+    S.replace "\\\n" ""
 
-                    other ->
-                        [ other ]
+
+removeLineEndingComments : String -> String
+removeLineEndingComments =
+    S.lines
+        >> List.map
+            (S.split "#"
+                >> (\splitstr ->
+                        case splitstr of
+                            [] ->
+                                ""
+
+                            h :: tail ->
+                                h
+                   )
             )
-        |> String.join "\n"
+        >> S.join "\n"
 
 
-parseToPreparedLines : String -> List PreparedLine
-parseToPreparedLines _ =
-    []
+removeFullLineComments : String -> String
+removeFullLineComments =
+    S.lines
+        >> List.filter (S.startsWith ";" >> not)
+        >> S.join "\n"
 
 
-parseSingleLine : String -> ( Maybe PreparedLine, String )
-parseSingleLine _ =
-    ( Nothing, "" )
+removeEmptyLines : String -> String
+removeEmptyLines =
+    S.lines
+        >> List.filter (S.isEmpty >> not)
+        >> S.join "\n"
+
+
+trimWhitespace : String -> String
+trimWhitespace =
+    S.lines
+        >> List.map S.trim
+        >> S.join "\n"
+
+
+prepareForIniParsing : String -> String
+prepareForIniParsing =
+    removeLineEndingComments
+        >> trimWhitespace
+        >> joinIniLineBreaks
+        >> removeEmptyLines
+        >> removeFullLineComments
