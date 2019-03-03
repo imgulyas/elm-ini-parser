@@ -1,4 +1,4 @@
-module ElmIniParser exposing (Ini(..), KeyAndValue(..), Section(..), parseIni, parseLineToKV, prepareForIniParsing)
+module ElmIniParser exposing (Ini(..), KeyAndValue(..), Section(..), parseIni, parseLineToKV, parseSectionTitle, prepareForIniParsing)
 
 import Dict exposing (Dict)
 import Parser exposing (..)
@@ -113,3 +113,25 @@ parseLineToKV =
         |. spaces
         |= valParser
         |. lineComment ""
+
+
+parseSectionTitle : Parser String
+parseSectionTitle =
+    let
+        myChomper =
+            getChompedString <|
+                succeed ()
+                    |. chompUntil "]"
+
+        titleChomper : Parser String
+        titleChomper =
+            map
+                (\titleWithWhitespace -> String.trimRight titleWithWhitespace)
+                myChomper
+    in
+    succeed identity
+        |. spaces
+        |. symbol "["
+        |. spaces
+        |= titleChomper
+        |. lineComment "]"

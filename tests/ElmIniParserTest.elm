@@ -1,4 +1,4 @@
-module ElmIniParserTest exposing (parseLineToKVTest, prepareForIniParsingTest)
+module ElmIniParserTest exposing (parseLineToKVTest, prepareForIniParsingTest, parseSectionTitleTest)
 
 import Debug
 import ElmIniParser exposing (..)
@@ -109,8 +109,8 @@ prepareForIniParsingTest =
         ]
 
 
-interpolate : List String -> String -> String
-interpolate interp s =
+format : List String -> String -> String
+format interp s =
     let
         split =
             String.split "{}" s
@@ -120,11 +120,8 @@ interpolate interp s =
                 (\spl -> \int -> int ++ spl)
                 split
                 ("" :: interp)
-
-        interpolated =
-            String.concat zipped
     in
-    interpolated
+    String.concat zipped
 
 
 parseLineToKVTest : Test
@@ -140,7 +137,7 @@ parseLineToKVTest =
                         "myvalue"
 
                     testLine =
-                        prepareForIniParsing <| interpolate [ key, value ] "  {} = {}"
+                        prepareForIniParsing <| format [ key, value ] "  {} = {}"
 
                     result =
                         Parser.run parseLineToKV testLine
@@ -159,7 +156,7 @@ parseLineToKVTest =
                         "myvalue"
 
                     testLine =
-                        prepareForIniParsing <| interpolate [ key, value ] "  {} = {}  \n"
+                        prepareForIniParsing <| format [ key, value ] "  {} = {}  \n"
 
                     result =
                         Parser.run parseLineToKV testLine
@@ -175,13 +172,36 @@ parseLineToKVTest =
                         "mykey"
 
                     testLine =
-                        prepareForIniParsing <| interpolate [ key ] "  {} =  \n"
+                        prepareForIniParsing <| format [ key ] "  {} =  \n"
 
                     result =
                         Parser.run parseLineToKV testLine
 
                     expected =
-                        Ok (KV key (Nothing))
+                        Ok (KV key Nothing)
+                in
+                Expect.equal expected result
+        ]
+
+
+parseSectionTitleTest : Test
+parseSectionTitleTest =
+    describe "parse prepared line to section title"
+        [ test "with some value until end of string" <|
+            \() ->
+                let
+                    key =
+                        "my-stuPid  non823_ = alphanumeric section titlel"
+
+
+                    testLine =
+                        prepareForIniParsing <| format [ key ] "  [   {}   ]  \n"
+
+                    result =
+                        Parser.run parseSectionTitle <| Debug.log "writing testLine" testLine
+
+                    expected =
+                        Ok key
                 in
                 Expect.equal expected result
         ]
