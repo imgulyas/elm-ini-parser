@@ -166,3 +166,18 @@ section =
     succeed Section
         |= sectionTitle
         |= configValues
+
+
+sections : Parser (List Section)
+sections =
+    let
+        sectionsHelper : List Section -> Parser (Step (List Section) (List Section))
+        sectionsHelper parsedSections =
+            oneOf
+                [ map
+                    (\s -> Loop (s :: parsedSections))
+                    section
+                , succeed () |> map (\_ -> Done <| List.reverse parsedSections)
+                ]
+    in
+    loop [] sectionsHelper

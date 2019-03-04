@@ -1,4 +1,4 @@
-module ElmIniParserTest exposing (configValuesTest, kvTest, prepareForIniParsingTest, sectionTest, sectionTitleTest)
+module ElmIniParserTest exposing (configValuesTest, kvTest, prepareForIniParsingTest, sectionTest, sectionTitleTest, sectionsTest)
 
 import Debug
 import Dict
@@ -283,6 +283,59 @@ sectionTest =
                     expected =
                         Ok <|
                             Section sectionTitle (Dict.fromList [ ( key1, Just value1 ) ])
+                in
+                Expect.equal expected result
+        ]
+
+
+sectionsTest : Test
+sectionsTest =
+    describe "list of sections"
+        [ test " 2 sections" <|
+            \() ->
+                let
+                    title1 =
+                        "title one. the first"
+
+                    key1 =
+                        "key1"
+
+                    value1 =
+                        "value1"
+
+                    title2 =
+                        "title two. the last"
+
+                    key2 =
+                        "keyasdfasdf2"
+
+                    value2 =
+                        "valuetwo2"
+
+                    key3 =
+                        "key3"
+
+                    value3 =
+                        "value3"
+
+                    preparedInput =
+                        prepareForIniParsing <|
+                            join <|
+                                [ format [ title1 ] "   [{}]    "
+                                , format [ key1, value1 ] "     {}   =   {}     "
+                                , format [ title2 ] "     [{}]     "
+                                , format [ key2 ] "     {}   ="
+                                , format [ key3, value3 ] "     {}   =   {}     "
+                                ]
+
+                    result =
+                        Parser.run sections preparedInput
+
+                    expected =
+                        Ok <|
+                            [ Section title1 (Dict.fromList [ ( key1, Just value1 ) ])
+                            , Section title2 (Dict.fromList [ ( key2, Nothing ), ( key3, Just value3 ) ])
+                            ]
                 in
                 Expect.equal expected result
         ]
