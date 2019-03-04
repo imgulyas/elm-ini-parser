@@ -1,4 +1,4 @@
-module ElmIniParser exposing (Ini(..), KeyAndValue(..), Section(..), configValues, ini, kv, prepareForIniParsing, section, sectionTitle)
+module ElmIniParser exposing (KeyAndValue(..), Ini(..), Section(..), ConfigValues, configValues, ini, kv, prepareForIniParsing, section, sectionTitle, sections)
 
 import Dict exposing (Dict)
 import Parser exposing (..)
@@ -17,11 +17,6 @@ type Section
 
 type alias ConfigValues =
     Dict String (Maybe String)
-
-
-ini : String -> Ini
-ini _ =
-    Debug.todo "define this"
 
 
 joinIniLineBreaks : String -> String
@@ -181,3 +176,14 @@ sections =
                 ]
     in
     loop [] sectionsHelper
+
+
+ini : Parser Ini
+ini =
+    oneOf
+        [ succeed WithGlobals
+            |= configValues
+            |= sections
+        , succeed WithoutGlobals
+            |= sections
+        ]

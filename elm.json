@@ -3,7 +3,7 @@
     "summary": "simple ini parser",
     "license": "MIT",
     "version": "0.0.1",
-    "exposed-modules": [],
+    "exposed-modules": ["Ini"],
     "type": "package",
     "source-directories": [
         "src"
