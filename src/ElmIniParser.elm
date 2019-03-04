@@ -1,4 +1,4 @@
-module ElmIniParser exposing (Ini(..), KeyAndValue(..), Section(..), parseIni, parseLineToKV, parseSectionTitle, prepareForIniParsing)
+module ElmIniParser exposing (Ini(..), KeyAndValue(..), Section(..), parseConfigValues, parseIni, parseLineToKV, parseSectionTitle, prepareForIniParsing)
 
 import Dict exposing (Dict)
 import Parser exposing (..)
@@ -97,12 +97,11 @@ parseLineToKV =
                         Nothing
 
                     else
-                        Just chomped
+                        Just <| String.trimLeft chomped
                 )
                 valueStringParser
     in
     succeed KV
-        |. spaces
         |= variable
             { start = Char.isAlphaNum
             , inner = Char.isAlphaNum
@@ -110,9 +109,9 @@ parseLineToKV =
             }
         |. spaces
         |. symbol "="
-        |. spaces
         |= valParser
         |. lineComment ""
+        |. oneOf [ symbol "\n", succeed () ]
 
 
 parseSectionTitle : Parser String
@@ -135,3 +134,27 @@ parseSectionTitle =
         |. spaces
         |= titleChomper
         |. lineComment "]"
+
+
+parseConfigValues : Parser ConfigValues
+parseConfigValues =
+    let
+        listParser : Parser (List KeyAndValue)
+        listParser =
+            loop [] pairsHelp
+
+        pairsHelp : List KeyAndValue -> Parser (Step (List KeyAndValue) (List KeyAndValue))
+        pairsHelp pairs =
+            oneOf
+                [ map
+                    (\pair -> Loop (pair :: pairs))
+                    parseLineToKV
+                , succeed () |> map (\_ -> Done <| List.reverse pairs)
+                ]
+    in
+    map
+        (\kvlist ->
+            List.map (\(KV key value) -> ( key, value )) kvlist
+                |> Dict.fromList
+        )
+        listParser

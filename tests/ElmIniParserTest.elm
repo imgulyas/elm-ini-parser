@@ -1,10 +1,12 @@
-module ElmIniParserTest exposing (parseLineToKVTest, prepareForIniParsingTest, parseSectionTitleTest)
+module ElmIniParserTest exposing (parseConfigValuesTest, parseLineToKVTest, parseSectionTitleTest, prepareForIniParsingTest)
 
 import Debug
+import Dict
 import ElmIniParser exposing (..)
 import Expect
 import List
 import Parser
+import Parser.Advanced
 import Test exposing (Test, describe, test)
 
 
@@ -172,7 +174,7 @@ parseLineToKVTest =
                         "mykey"
 
                     testLine =
-                        prepareForIniParsing <| format [ key ] "  {} =  \n"
+                        prepareForIniParsing <| format [ key ] "  {} =  \n   otherKey = somethingelse"
 
                     result =
                         Parser.run parseLineToKV testLine
@@ -193,15 +195,62 @@ parseSectionTitleTest =
                     key =
                         "my-stuPid  non823_ = alphanumeric section titlel"
 
-
                     testLine =
                         prepareForIniParsing <| format [ key ] "  [   {}   ]  \n"
 
                     result =
-                        Parser.run parseSectionTitle <| Debug.log "writing testLine" testLine
+                        Parser.run parseSectionTitle testLine
 
                     expected =
                         Ok key
+                in
+                Expect.equal expected result
+        ]
+
+
+parseConfigValuesTest : Test
+parseConfigValuesTest =
+    describe "parse prepared lines to a Dict of key-value pairs"
+        [ test " 3 lines then an unparseable line" <|
+            \() ->
+                let
+                    key1 =
+                        "key1"
+
+                    value1 =
+                        "value1"
+
+                    line1 =
+                        format [ key1, value1 ] "   {} =         {}"
+
+                    key2 =
+                        "keyasdf2"
+
+                    value2 =
+                        "val2"
+
+                    line2 =
+                        format [ key2, value2 ] "   {} =         {}"
+
+                    key3 =
+                        "key3"
+
+                    line3 =
+                        format [ key3 ] "   {} =   "
+
+                    text =
+                        prepareForIniParsing <| join [line3,  line2, line1, "   [asdfasdf]" ]
+
+                    result =
+                        Parser.Advanced.run parseConfigValues <| Debug.log "Input text" text
+
+                    expected =
+                        Ok <|
+                            Dict.fromList
+                                [ ( key1, Just value1 )
+                                , ( key2, Just value2 )
+                                , ( key3, Nothing )
+                                ]
                 in
                 Expect.equal expected result
         ]
