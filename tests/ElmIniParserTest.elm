@@ -1,4 +1,4 @@
-module ElmIniParserTest exposing (parseConfigValuesTest, parseLineToKVTest, parseSectionTest, parseSectionTitleTest, prepareForIniParsingTest)
+module ElmIniParserTest exposing (configValuesTest, kvTest, prepareForIniParsingTest, sectionTest, sectionTitleTest)
 
 import Debug
 import Dict
@@ -126,8 +126,8 @@ format interp s =
     String.concat zipped
 
 
-parseLineToKVTest : Test
-parseLineToKVTest =
+kvTest : Test
+kvTest =
     describe "parse prepared line to key and value"
         [ test "with some value until end of string" <|
             \() ->
@@ -142,7 +142,7 @@ parseLineToKVTest =
                         prepareForIniParsing <| format [ key, value ] "  {} = {}"
 
                     result =
-                        Parser.run parseLineToKV testLine
+                        Parser.run kv testLine
 
                     expected =
                         Ok (KV key (Just value))
@@ -161,7 +161,7 @@ parseLineToKVTest =
                         prepareForIniParsing <| format [ key, value ] "  {} = {}  \n"
 
                     result =
-                        Parser.run parseLineToKV testLine
+                        Parser.run kv testLine
 
                     expected =
                         Ok (KV key (Just value))
@@ -177,7 +177,7 @@ parseLineToKVTest =
                         prepareForIniParsing <| format [ key ] "  {} =  \n   otherKey = somethingelse"
 
                     result =
-                        Parser.run parseLineToKV testLine
+                        Parser.run kv testLine
 
                     expected =
                         Ok (KV key Nothing)
@@ -186,8 +186,8 @@ parseLineToKVTest =
         ]
 
 
-parseSectionTitleTest : Test
-parseSectionTitleTest =
+sectionTitleTest : Test
+sectionTitleTest =
     describe "parse prepared line to section title"
         [ test "with some value until end of string" <|
             \() ->
@@ -199,7 +199,7 @@ parseSectionTitleTest =
                         prepareForIniParsing <| format [ key ] "  [   {}   ]  \n"
 
                     result =
-                        Parser.run parseSectionTitle testLine
+                        Parser.run sectionTitle testLine
 
                     expected =
                         Ok key
@@ -208,8 +208,8 @@ parseSectionTitleTest =
         ]
 
 
-parseConfigValuesTest : Test
-parseConfigValuesTest =
+configValuesTest : Test
+configValuesTest =
     describe "parse prepared lines to a Dict of key-value pairs"
         [ test " 3 lines then an unparseable line" <|
             \() ->
@@ -242,7 +242,7 @@ parseConfigValuesTest =
                         prepareForIniParsing <| join [ line3, line2, line1, "   [asdfasdf]" ]
 
                     result =
-                        Parser.Advanced.run parseConfigValues text
+                        Parser.Advanced.run configValues text
 
                     expected =
                         Ok <|
@@ -256,8 +256,8 @@ parseConfigValuesTest =
         ]
 
 
-parseSectionTest : Test
-parseSectionTest =
+sectionTest : Test
+sectionTest =
     describe "parse full section"
         [ test " 3 lines then an unparseable line" <|
             \() ->
@@ -278,7 +278,7 @@ parseSectionTest =
                         prepareForIniParsing <| join [ format [ sectionTitle ] "     [{}  ]   ", line1, "   [asdfasdf]" ]
 
                     result =
-                        Parser.Advanced.run parseSection text
+                        Parser.Advanced.run section text
 
                     expected =
                         Ok <|

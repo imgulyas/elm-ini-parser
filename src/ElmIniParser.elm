@@ -1,4 +1,4 @@
-module ElmIniParser exposing (Ini(..), KeyAndValue(..), Section(..), parseConfigValues, parseIni, parseLineToKV, parseSectionTitle, prepareForIniParsing, parseSection)
+module ElmIniParser exposing (Ini(..), KeyAndValue(..), Section(..), configValues, ini, kv, prepareForIniParsing, section, sectionTitle)
 
 import Dict exposing (Dict)
 import Parser exposing (..)
@@ -19,8 +19,8 @@ type alias ConfigValues =
     Dict String (Maybe String)
 
 
-parseIni : String -> Ini
-parseIni _ =
+ini : String -> Ini
+ini _ =
     Debug.todo "define this"
 
 
@@ -80,8 +80,8 @@ type KeyAndValue
     = KV String (Maybe String)
 
 
-parseLineToKV : Parser KeyAndValue
-parseLineToKV =
+kv : Parser KeyAndValue
+kv =
     let
         valueStringParser : Parser String
         valueStringParser =
@@ -114,8 +114,8 @@ parseLineToKV =
         |. oneOf [ symbol "\n", succeed () ]
 
 
-parseSectionTitle : Parser String
-parseSectionTitle =
+sectionTitle : Parser String
+sectionTitle =
     let
         myChomper =
             getChompedString <|
@@ -137,8 +137,8 @@ parseSectionTitle =
         |. oneOf [ symbol "\n", succeed () ]
 
 
-parseConfigValues : Parser ConfigValues
-parseConfigValues =
+configValues : Parser ConfigValues
+configValues =
     let
         listParser : Parser (List KeyAndValue)
         listParser =
@@ -149,7 +149,7 @@ parseConfigValues =
             oneOf
                 [ map
                     (\pair -> Loop (pair :: pairs))
-                    parseLineToKV
+                    kv
                 , succeed () |> map (\_ -> Done <| List.reverse pairs)
                 ]
     in
@@ -160,7 +160,9 @@ parseConfigValues =
         )
         listParser
 
-parseSection : Parser Section
-parseSection = succeed Section
-                 |= parseSectionTitle
-                 |= parseConfigValues
+
+section : Parser Section
+section =
+    succeed Section
+        |= sectionTitle
+        |= configValues
