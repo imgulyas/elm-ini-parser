@@ -1,4 +1,4 @@
-module ElmIniParserTest exposing (parseConfigValuesTest, parseLineToKVTest, parseSectionTitleTest, prepareForIniParsingTest)
+module ElmIniParserTest exposing (parseConfigValuesTest, parseLineToKVTest, parseSectionTest, parseSectionTitleTest, prepareForIniParsingTest)
 
 import Debug
 import Dict
@@ -239,10 +239,10 @@ parseConfigValuesTest =
                         format [ key3 ] "   {} =   "
 
                     text =
-                        prepareForIniParsing <| join [line3,  line2, line1, "   [asdfasdf]" ]
+                        prepareForIniParsing <| join [ line3, line2, line1, "   [asdfasdf]" ]
 
                     result =
-                        Parser.Advanced.run parseConfigValues <| Debug.log "Input text" text
+                        Parser.Advanced.run parseConfigValues text
 
                     expected =
                         Ok <|
@@ -251,6 +251,38 @@ parseConfigValuesTest =
                                 , ( key2, Just value2 )
                                 , ( key3, Nothing )
                                 ]
+                in
+                Expect.equal expected result
+        ]
+
+
+parseSectionTest : Test
+parseSectionTest =
+    describe "parse full section"
+        [ test " 3 lines then an unparseable line" <|
+            \() ->
+                let
+                    sectionTitle =
+                        "finetitle"
+
+                    key1 =
+                        "key1"
+
+                    value1 =
+                        "value1"
+
+                    line1 =
+                        format [ key1, value1 ] "   {} =         {}"
+
+                    text =
+                        prepareForIniParsing <| join [ format [ sectionTitle ] "     [{}  ]   ", line1, "   [asdfasdf]" ]
+
+                    result =
+                        Parser.Advanced.run parseSection text
+
+                    expected =
+                        Ok <|
+                            Section sectionTitle (Dict.fromList [ ( key1, Just value1 ) ])
                 in
                 Expect.equal expected result
         ]

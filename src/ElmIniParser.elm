@@ -1,4 +1,4 @@
-module ElmIniParser exposing (Ini(..), KeyAndValue(..), Section(..), parseConfigValues, parseIni, parseLineToKV, parseSectionTitle, prepareForIniParsing)
+module ElmIniParser exposing (Ini(..), KeyAndValue(..), Section(..), parseConfigValues, parseIni, parseLineToKV, parseSectionTitle, prepareForIniParsing, parseSection)
 
 import Dict exposing (Dict)
 import Parser exposing (..)
@@ -134,6 +134,7 @@ parseSectionTitle =
         |. spaces
         |= titleChomper
         |. lineComment "]"
+        |. oneOf [ symbol "\n", succeed () ]
 
 
 parseConfigValues : Parser ConfigValues
@@ -158,3 +159,8 @@ parseConfigValues =
                 |> Dict.fromList
         )
         listParser
+
+parseSection : Parser Section
+parseSection = succeed Section
+                 |= parseSectionTitle
+                 |= parseConfigValues
