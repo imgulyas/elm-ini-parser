@@ -215,7 +215,7 @@ configValuesTest =
             \() ->
                 let
                     key1 =
-                        "key1"
+                        "key 1"
 
                     value1 =
                         "value1"

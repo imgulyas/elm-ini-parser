@@ -107,6 +107,7 @@ kv =
                 )
                 valueStringParser
     in
+    -- TODO: inner should accept space
     succeed KV
         |= variable
             { start = Char.isAlphaNum
