@@ -9,8 +9,10 @@ i=$(sed "s/\"/'/g" <<< "$input")
 
 # echo "$input"
 # echo "$i"
+elm make src/Main.elm --output=main.js
 
-cat main.js > main2.js
+head -n -1 main.js > main2.js
+echo "elm\$json\$Json\$Decode\$succeed(_Utils_Tuple0))(0)}}); author\$project\$Ini\$parseIni(input_text);});" >> main2.js
+sed -i "1s/.*/var main = (function(scope, input_text){/" main2.js
 echo "main(this, \"$i\")" >> main2.js
-#
 node main2.js

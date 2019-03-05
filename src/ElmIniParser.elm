@@ -38,13 +38,24 @@ removeLineEndingComments =
                                 h
                    )
             )
+        >> List.map
+            (S.split "#"
+                >> (\splitstr ->
+                        case splitstr of
+                            [] ->
+                                ""
+
+                            h :: tail ->
+                                h
+                   )
+            )
         >> S.join "\n"
 
 
 removeFullLineComments : String -> String
 removeFullLineComments =
     S.lines
-        >> List.filter (S.startsWith ";" >> not)
+        >> List.filter (\line -> not (S.startsWith ";" line || S.startsWith "#" line))
         >> S.join "\n"
 
 
@@ -103,7 +114,7 @@ kv =
             , reserved = Set.empty
             }
         |. spaces
-        |. symbol "="
+        |. oneOf [ symbol "=", symbol ":" ]
         |= valParser
         |. lineComment ""
         |. oneOf [ symbol "\n", succeed () ]

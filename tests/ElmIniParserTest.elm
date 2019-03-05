@@ -236,7 +236,7 @@ configValuesTest =
                         "key3"
 
                     line3 =
-                        format [ key3 ] "   {} =   "
+                        format [ key3 ] "   {} :   "
 
                     text =
                         prepareForIniParsing <| join [ line3, line2, line1, "   [asdfasdf]" ]
