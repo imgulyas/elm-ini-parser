@@ -285,6 +285,32 @@ sectionTest =
                             Section sectionTitle (Dict.fromList [ ( key1, Just value1 ) ])
                 in
                 Expect.equal expected result
+        , test " html input" <|
+            \() ->
+                let
+                    sectionTitle =
+                        "finetitle"
+
+                    key1 =
+                        "key1"
+
+                    value1 =
+                        "value1"
+
+                    line1 =
+                        format [ key1, value1 ] "{}={}"
+
+                    text =
+                        prepareForIniParsing <| join [ format [ sectionTitle ] "[{}]", line1, "[asdfasdf]" ]
+
+                    result =
+                        Parser.Advanced.run section text
+
+                    expected =
+                        Ok <|
+                            Section sectionTitle (Dict.fromList [ ( key1, Just value1 ) ])
+                in
+                Expect.equal expected result
         ]
 
 

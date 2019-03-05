@@ -7,6 +7,6 @@ import Parser
 
 parseIni : String -> Result String ElmIniParser.Ini
 parseIni text =
-    ElmIniParser.prepareForIniParsing text
+    Debug.log "prepared text" (ElmIniParser.prepareForIniParsing text)
         |> Parser.run ElmIniParser.ini
         |> Result.mapError (\error -> Debug.toString error)
